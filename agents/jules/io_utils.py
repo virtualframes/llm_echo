@@ -22,10 +22,7 @@ def atomic_write_json(path, data):
 
 
 def sha256_hex_of_str(s: str):
-    if isinstance(s, str):
-        b = s.encode("utf-8")
-    else:
-        b = s
+    b = s.encode("utf-8")
     return hashlib.sha256(b).hexdigest()
 
 
