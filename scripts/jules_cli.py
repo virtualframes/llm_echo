@@ -57,9 +57,7 @@ def parse_qodo(args):
     for c in comments:
         if c.user and c.user.login and "qodo" in c.user.login.lower():
             parsed = parse_qodo_comment_body(c.body or "")
-            qodo_feedbacks.append(
-                {"author": c.user.login, "parsed": parsed, "id": c.id}
-            )
+            qodo_feedbacks.append({"author": c.user.login, "parsed": parsed, "id": c.id})
     payload = {"qodofeedback": qodo_feedbacks, "pr": args.pr, "repo": args.repo}
     input_hash = sha256_hex_of_obj({"repo": args.repo, "pr": args.pr})
     if args.dry_run:
@@ -81,9 +79,7 @@ def dispatch(args):
         url = extract_url(comment_body)
         if url:
             claim_id = os.environ.get("GITHUB_ISSUE_NUMBER", "unknown")
-            scrape_args = argparse.Namespace(
-                url=url, claimid=claim_id, dry_run=args.dry_run
-            )
+            scrape_args = argparse.Namespace(url=url, claimid=claim_id, dry_run=args.dry_run)
             scrape(scrape_args)
         else:
             print("No URL found in comment.")
@@ -91,9 +87,7 @@ def dispatch(args):
         repo = os.environ.get("GITHUB_REPOSITORY", "unknown")
         pr_number = int(os.environ.get("GITHUB_ISSUE_NUMBER", 0))
         if pr_number:
-            parse_qodo_args = argparse.Namespace(
-                repo=repo, pr=pr_number, dry_run=args.dry_run
-            )
+            parse_qodo_args = argparse.Namespace(repo=repo, pr=pr_number, dry_run=args.dry_run)
             parse_qodo(parse_qodo_args)
         else:
             print("Could not determine PR number.")
@@ -106,21 +100,27 @@ def main():
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # Scrape subcommand
-    parser_scrape = subparsers.add_parser("scrape", help="Scrape a URL and emit a provenance event.")
+    parser_scrape = subparsers.add_parser(
+        "scrape", help="Scrape a URL and emit a provenance event."
+    )
     parser_scrape.add_argument("--url", required=True)
     parser_scrape.add_argument("--claimid", required=True)
     parser_scrape.add_argument("--dry-run", action="store_true")
     parser_scrape.set_defaults(func=scrape)
 
     # Parse Qodo subcommand
-    parser_parse_qodo = subparsers.add_parser("parse-qodo", help="Parse Qodo comments from a PR and emit a provenance event.")
+    parser_parse_qodo = subparsers.add_parser(
+        "parse-qodo", help="Parse Qodo comments from a PR and emit a provenance event."
+    )
     parser_parse_qodo.add_argument("--repo", required=True)
     parser_parse_qodo.add_argument("--pr", required=True, type=int)
     parser_parse_qodo.add_argument("--dry-run", action="store_true")
     parser_parse_qodo.set_defaults(func=parse_qodo)
 
     # Dispatch subcommand
-    parser_dispatch = subparsers.add_parser("dispatch", help="Dispatch a command from a comment body.")
+    parser_dispatch = subparsers.add_parser(
+        "dispatch", help="Dispatch a command from a comment body."
+    )
     parser_dispatch.add_argument("--comment", required=True)
     parser_dispatch.add_argument("--dry-run", action="store_true")
     parser_dispatch.set_defaults(func=dispatch)

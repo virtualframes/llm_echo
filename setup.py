@@ -1,4 +1,5 @@
 """Setup script for Jules"""
+
 from setuptools import setup, find_packages
 
 setup(

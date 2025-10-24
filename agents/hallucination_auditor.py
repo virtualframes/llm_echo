@@ -6,6 +6,7 @@ from agents.provenance import emit, input_sha256_text
 AUDITS_DIR = Path("data/audits")
 AUDITS_DIR.mkdir(parents=True, exist_ok=True)
 
+
 def classify_text_block(text: str):
     flags = []
     evidence = []
@@ -24,6 +25,7 @@ def classify_text_block(text: str):
     confidence = min(0.95, 0.5 + 0.15 * len(flags))
     return {"flags": flags, "confidence": confidence, "evidence": evidence}
 
+
 def audit_threads(ndjson_path: str, seed: int = 42):
     results = []
     with open(ndjson_path, "r", encoding="utf-8") as fh:
@@ -39,15 +41,24 @@ def audit_threads(ndjson_path: str, seed: int = 42):
                 "flags": audit["flags"],
                 "confidence": audit["confidence"],
                 "evidence": audit["evidence"],
-                "input_sha256": input_sha256_text(combined)
+                "input_sha256": input_sha256_text(combined),
             }
-            prov = emit("audit_flagged", {"thread_id": t.get("id"), "subreddit": t.get("subreddit"), "flags": audit_record["flags"]})
+            prov = emit(
+                "audit_flagged",
+                {
+                    "thread_id": t.get("id"),
+                    "subreddit": t.get("subreddit"),
+                    "flags": audit_record["flags"],
+                },
+            )
             audit_record["provenance_id"] = prov["id"]
             results.append(audit_record)
     return results
 
+
 if __name__ == "__main__":
     import sys
+
     if len(sys.argv) < 2:
         print("Usage: python agents/hallucination_auditor.py data/raw/<sub>_threads.ndjson")
         raise SystemExit(1)

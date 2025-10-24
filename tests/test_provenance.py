@@ -2,6 +2,7 @@ import json
 import jsonschema
 from agents.provenance import emitevent
 
+
 def test_emitevent_schema():
     """
     Tests that the emitevent function produces a schema-compliant event.

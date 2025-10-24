@@ -1,6 +1,7 @@
 import pytest
 from agents.citationdetector import detectcitations
 
+
 def test_detectcitations():
     text = "This is a test text with a citation (Smith, 2023)."
     citations = detectcitations(text)

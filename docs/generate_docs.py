@@ -2,6 +2,7 @@ import json
 import glob
 from pathlib import Path
 
+
 def generate_keywords_doc(expanded_path: str, out_path: str, run_id: str):
     """Generates a Markdown document for the expanded keywords."""
     with open(expanded_path, "r", encoding="utf-8") as f:
@@ -12,6 +13,7 @@ def generate_keywords_doc(expanded_path: str, out_path: str, run_id: str):
         f.write("## Top Keywords\n")
         for keyword in data.get("keywords", [])[:20]:
             f.write(f"- `{keyword}`\n")
+
 
 def generate_contradictions_doc(contradictions_path: str, out_path: str, top_n: int = 25):
     """Generates a Markdown document for the top contradictions."""
@@ -29,11 +31,15 @@ def generate_contradictions_doc(contradictions_path: str, out_path: str, top_n: 
         for contradiction in all_contradictions[:top_n]:
             f.write(f"## Claim: {contradiction.get('claim_excerpt', '')}\n")
             f.write(f"- **Thread ID:** {contradiction.get('thread_id', '')}\n")
-            f.write(f"- **Contradiction Score:** {contradiction.get('contradiction_score', 0):.2f}\n")
+            f.write(
+                f"- **Contradiction Score:** {contradiction.get('contradiction_score', 0):.2f}\n"
+            )
             f.write("\n")
+
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--runid", required=True)
     args = parser.parse_args()

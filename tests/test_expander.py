@@ -7,6 +7,7 @@ from keywords.expander import (
     save_expanded,
 )
 
+
 def test_extract_candidates(tmp_path):
     """Tests the extract_candidates function."""
     corpus_path = tmp_path / "corpus.ndjson"
@@ -14,11 +15,13 @@ def test_extract_candidates(tmp_path):
     candidates = extract_candidates(str(corpus_path))
     assert len(candidates) > 0
 
+
 def test_tfidf_candidates():
     """Tests the tfidf_candidates function."""
     texts = ["this is a test sentence", "this is another test sentence"]
     candidates = tfidf_candidates(texts)
     assert len(candidates) > 0
+
 
 def test_cooccurrence_expand():
     """Tests the cooccurrence_expand function."""
@@ -27,6 +30,7 @@ def test_cooccurrence_expand():
     expanded = cooccurrence_expand(seed_list, texts)
     assert len(expanded) > 0
 
+
 def test_generate_deepseek_queries():
     """Tests the generate_deepseek_queries function."""
     canonical_claims = [
@@ -34,6 +38,7 @@ def test_generate_deepseek_queries():
     ]
     queries = generate_deepseek_queries(canonical_claims)
     assert len(queries) == 3
+
 
 def test_save_expanded(tmp_path):
     """Tests the save_expanded function."""
