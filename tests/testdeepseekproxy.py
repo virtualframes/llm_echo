@@ -31,3 +31,12 @@ def test_proxy_normalizes():
     )
     assert "evidence" in out
     assert isinstance(out["evidence"], list)
+
+def test_proxy_redaction():
+    # This is a placeholder for a real redaction test.
+    # In a real scenario, we would check for things like API keys, emails, etc.
+    sess = DummySession({"evidence": [{"snippet": "x", "api_key": "dummy_key"}]})
+    out = querydeepseekviaapi(
+        "<html/>", "instr", {}, {"claimid": "1"}, session=sess
+    )
+    assert "api_key" not in out["evidence"][0]

@@ -57,3 +57,4 @@ def test_emitevent_writes_bundle(tmp_path, monkeypatch, setup_prov_schema):
     # load and validate basic shape
     b = json.loads(bundle_path.read_text())
     assert b["module"] == "test_module"
+    assert b["eventtype"] == "test_event"

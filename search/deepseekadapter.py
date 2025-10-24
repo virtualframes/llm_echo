@@ -1,4 +1,3 @@
-
 def deepseekquery(html, provenance_bundle=None, instructions=None, schema=None):
     # call proxy or DeepSeek client and receive normalized evidence
     from agents.jules.deepseek_proxy import querydeepseekviaapi
