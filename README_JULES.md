@@ -1,45 +1,82 @@
-# Jules Provenance System
+# JULES Agent
 
-This document outlines the architecture and usage of the Jules provenance system.
+## Purpose and Architecture Overview
 
-## Overview
+`agents/jules` provides a modular agent for orchestrating LLM tasks, including scraping web content, parsing Qodo comments for feedback, and emitting detailed provenance events. It is designed to integrate seamlessly with CI/CD pipelines, particularly GitHub Actions, to support robust artifact and data lineage.
 
-The Jules provenance system is designed to track the origin and transformation of data within the `llm_echo` pipeline. It emits provenance events, which are JSON objects that conform to the schema defined in `.github/PROVENANCE_SCHEMA.json`. These events are stored as individual files in the `.github/PROVENANCE/` directory.
+The system is composed of several key components:
+- **Jules Utilities (`agents/jules/`)**: A collection of helper modules for common tasks like I/O operations, schema validation, and interacting with the DeepSeek API.
+- **Provenance Emitter (`agents/provenance.py`)**: The core module responsible for creating, validating, and emitting provenance events.
+- **Unified CLI (`scripts/jules_cli.py`)**: A single command-line interface for all agent operations.
+- **Unified GitHub Workflow (`.github/workflows/jules_agent.yml`)**: A single, unified automation pipeline that is triggered by issue comments to run the CLI.
+- **Provenance Storage (`.github/PROVENANCE/`)**: The directory where the emitted provenance bundles are stored as JSON files.
 
-## Usage
+## File Locations and Responsibilities
 
-### Command-Line Interface
+- **`agents/jules/`**: Contains all the core logic and utilities for the Jules agent.
+  - `__init__.py`: Package marker.
+  - `deepseek_proxy.py`: A proxy for querying the DeepSeek API.
+  - `io_utils.py`: Utilities for atomic file writing and hashing.
+  - `qodo_reader.py`: Logic for parsing Qodo comments.
+  - `schema_validator.py`: A module for validating provenance events against the official JSON schema.
+- **`agents/provenance.py`**: The main interface for emitting provenance events.
+- **`search/deepseekadapter.py`**: An adapter for interacting with the DeepSeek service.
+- **`scripts/jules_cli.py`**: The unified entry-point script for all agent workflows.
+- **`scripts/pin-actions.sh`**: A script for pinning GitHub Actions to their full commit SHAs.
+- **`.github/PROVENANCE/`**: The output directory for all emitted provenance bundles.
+- **`.github/workflows/jules_agent.yml`**: The unified workflow for all Jules agent operations.
+- **`tests/`**: Contains the unit tests for the new modules.
 
-The `scrapeandemit.py` script provides a command-line interface for scraping a URL, processing it with the DeepSeek API, and emitting a provenance event.
+## How to Run Locally
 
-To use the script, run the following command:
+To run the scripts locally, you will need to set up your environment and provide the necessary API keys and tokens.
 
-```bash
-python scripts/scrapeandemit.py <URL>
-```
+1.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-You can also perform a dry run, which will print the event to the console without writing it to a file:
+2.  **Set up environment variables:**
+    Create a `.env` file in the root of the repository and add the following variables:
+    ```
+    GITHUB_TOKEN="your_github_personal_access_token"
+    GH_PAT="your_github_personal_access_token"
+    ```
+    Then, load the environment variables:
+    ```bash
+    export $(cat .env | xargs)
+    ```
 
-```bash
-python scripts/scrapeandemit.py <URL> --dry-run
-```
+3.  **Run the scripts:**
+    You can now run the scripts with the `--dry-run` flag to test them without emitting any provenance events.
 
-### GitHub Actions Workflow
+    *   **Parse Qodo feedback:**
+        ```bash
+        python scripts/jules_cli.py parse-qodo --repo "owner/repo" --pr 123 --dry-run
+        ```
 
-The provenance system can also be triggered automatically using a GitHub Actions workflow. The workflow is defined in `.github/workflows/deepseekscrape.yml` and can be triggered in the following ways:
+    *   **Scrape a URL:**
+        ```bash
+        python scripts/jules_cli.py scrape --url "https://example.com" --claimid "issue-1" --dry-run
+        ```
 
-*   **Manual trigger:** The workflow can be triggered manually from the GitHub Actions tab.
-*   **Repository dispatch:** The workflow can be triggered by a `repository_dispatch` event with the `deepseek-scrape` event type.
-*   **Issue comment:** The workflow can be triggered by creating a comment on a pull request that starts with `/deepseek-scan <URL>`.
+## How to Pin GitHub Actions
 
-## Schema
+This repository enforces a security policy that requires all third-party GitHub Actions to be pinned to their full commit SHAs. A script is provided to automate this process.
 
-The provenance event schema is defined in `.github/PROVENANCE_SCHEMA.json`. All events emitted by the system must conform to this schema.
+-   **Why SHA pinning is enforced**: Pinning actions to a full-length commit SHA is a security best practice that ensures you are using a specific, immutable version of the action. This mitigates the risk of supply chain attacks where a malicious actor could take over a tag (e.g., `v3`) and point it to a compromised version of the action.
 
-## Testing
+-   **How to run the pinning script**:
+    ```bash
+    bash scripts/pin-actions.sh --apply
+    ```
+    This will scan all workflow files in `.github/workflows/`, replace any version tags with the corresponding commit SHAs, and generate a provenance file.
 
-To run the tests for the provenance system, run the following command:
+-   **Where provenance is stored**: A record of the pinned actions is stored in `.github/PROVENANCE/actions-pin.json`. This file should be committed along with the updated workflow files.
 
-```bash
-python -m unittest discover tests
-```
+## Jules's Behavior and Safety Notes
+
+- **Jules can make mistakes**: The code generated and modified by Jules should always be thoroughly reviewed by a human.
+- **Double-check outputs**: The provenance bundles generated by the system should be reviewed to ensure they contain the expected information and that no sensitive data has been leaked.
+- **Security**: The GitHub Actions workflows are pinned to full commit SHAs to mitigate the risk of supply chain attacks.
+- **API Keys**: The system is designed to read API keys and tokens from environment variables. Never hardcode these values in the source code.
