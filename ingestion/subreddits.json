@@ -1,0 +1,6 @@
+{
+  "targets": ["r/ArtificialSentience", "r/llmphysics"],
+  "threadspersubreddit": 100,
+  "lookback_days": 365,
+  "mode": "reddit"
+}
