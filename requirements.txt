@@ -10,3 +10,6 @@ sentencepiece
 uvicorn
 fastapi
 jsonschema
+
+PyGithub
+requests-mock
