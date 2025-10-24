@@ -7,8 +7,8 @@
 The system is composed of several key components:
 - **Jules Utilities (`agents/jules/`)**: A collection of helper modules for common tasks like I/O operations, schema validation, and interacting with the DeepSeek API.
 - **Provenance Emitter (`agents/provenance.py`)**: The core module responsible for creating, validating, and emitting provenance events.
-- **CLI Scripts (`scripts/`)**: A set of command-line tools for triggering the scraping and Qodo parsing workflows.
-- **GitHub Workflows (`.github/workflows/`)**: Automation pipelines that are triggered by issue comments to run the CLI scripts.
+- **Unified CLI (`scripts/jules_cli.py`)**: A single command-line interface for all agent operations.
+- **Unified GitHub Workflow (`.github/workflows/jules_agent.yml`)**: A single, unified automation pipeline that is triggered by issue comments to run the CLI.
 - **Provenance Storage (`.github/PROVENANCE/`)**: The directory where the emitted provenance bundles are stored as JSON files.
 
 ## File Locations and Responsibilities
@@ -21,13 +21,9 @@ The system is composed of several key components:
   - `schema_validator.py`: A module for validating provenance events against the official JSON schema.
 - **`agents/provenance.py`**: The main interface for emitting provenance events.
 - **`search/deepseekadapter.py`**: An adapter for interacting with the DeepSeek service.
-- **`scripts/`**: Contains the entry-point scripts for the workflows.
-  - `scrapeandemit.py`: Fetches a URL, queries the DeepSeek API, and emits a provenance event.
-  - `parseqodoand_emit.py`: Parses Qodo comments from a pull request and emits a provenance event.
+- **`scripts/jules_cli.py`**: The unified entry-point script for all agent workflows.
 - **`.github/PROVENANCE/`**: The output directory for all emitted provenance bundles.
-- **`.github/workflows/`**: Contains the GitHub Actions workflows.
-  - `deepseek_scrape.yml`: A workflow for scraping web content.
-  - `qodo_feedback.yml`: A workflow for parsing Qodo feedback.
+- **`.github/workflows/jules_agent.yml`**: The unified workflow for all Jules agent operations.
 - **`tests/`**: Contains the unit tests for the new modules.
 
 ## How to Run Locally
@@ -42,8 +38,6 @@ To run the scripts locally, you will need to set up your environment and provide
 2.  **Set up environment variables:**
     Create a `.env` file in the root of the repository and add the following variables:
     ```
-    SCRAPEDO_API_KEY="your_scrapedo_api_key"
-    DEEPSEEK_URL="your_deepseek_api_url"
     GITHUB_TOKEN="your_github_personal_access_token"
     GH_PAT="your_github_personal_access_token"
     ```
@@ -57,12 +51,12 @@ To run the scripts locally, you will need to set up your environment and provide
 
     *   **Parse Qodo feedback:**
         ```bash
-        python scripts/parseqodoand_emit.py --repo "owner/repo" --pr 123 --dry-run
+        python scripts/jules_cli.py parse-qodo --repo "owner/repo" --pr 123 --dry-run
         ```
 
     *   **Scrape a URL:**
         ```bash
-        python scripts/scrapeandemit.py --url "https://example.com" --claimid "issue-1" --dry-run
+        python scripts/jules_cli.py scrape --url "https://example.com" --claimid "issue-1" --dry-run
         ```
 
 ## Jules's Behavior and Safety Notes

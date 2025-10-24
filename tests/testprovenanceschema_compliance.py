@@ -44,7 +44,9 @@ def test_emitevent_writes_bundle(tmp_path, monkeypatch, setup_prov_schema):
     d = tmp_path / ".github" / "PROVENANCE"
     monkeypatch.chdir(tmp_path)
     payload = {"foo": "bar"}
-    event = emitevent("test_module", payload, commitsha="deadbeef", inputhash="abc123")
+    event = emitevent(
+        "test_module", "test_event", payload, commitsha="deadbeef", inputhash="abc123"
+    )
     # ensure outputhash is correct
     assert "outputhash" in event
     assert event["payload"] == payload

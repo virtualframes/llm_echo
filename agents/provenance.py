@@ -7,12 +7,14 @@ from agents.jules.io_utils import sha256_hex_of_obj, ensure_dir, atomic_write_js
 PROV_DIR = ".github/PROVENANCE"
 
 
-def emitevent(module: str, payload: dict, commitsha: str = None, inputhash: str = None):
+def emitevent(
+    module: str, eventtype: str, payload: dict, commitsha: str = None, inputhash: str = None
+):
     output_hash = sha256_hex_of_obj(payload)
     provenance_token = str(uuid.uuid4())
     event = {
         "module": module,
-        "eventtype": "evidence_emitted",
+        "eventtype": eventtype,
         "timestampiso": datetime.now(timezone.utc).isoformat(),
         "payload": payload,
         "commitsha": commitsha or "",
