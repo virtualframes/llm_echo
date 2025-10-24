@@ -1,47 +1,47 @@
 import json
-import hashlib
-from datetime import datetime, timezone
-import subprocess
 import uuid
+from datetime import datetime
+import subprocess
+from agents.jules.schemavalidator import validateeventor_raise
+from agents.jules.ioutils import sha256hexof, ensure_dir, atomicwritejson
 
-def get_output_hash(token):
-    """
-    Calculates the SHA256 hash of a provenance token, excluding the outputhash field.
-    """
-    token_copy = token.copy()
-    token_copy.pop("outputhash", None)
-    return get_input_hash(token_copy)
+PROV_DIR = ".github/PROVENANCE"
 
-def emitevent(module, eventtype, payload, provenance_bundle):
+def emitevent(module, eventtype, payload, commitsha=None, inputhash=None):
     """
-    emits a provenance event and adds it to the bundle.
+    Emits a provenance event, validates it, and writes it to a file.
     """
+    if commitsha is None:
+        commitsha = get_commit_sha()
 
-    provenance_token = {
+    payload_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    outputhash = sha256hexof(payload_json)
+    provenancetoken = str(uuid.uuid4())
+
+    event = {
         "module": module,
         "eventtype": eventtype,
-        "timestampiso": datetime.now(timezone.utc).isoformat(),
+        "timestampiso": datetime.utcnow().isoformat() + "Z",
         "payload": payload,
-        "commitsha": get_commit_sha(),
-        "inputhash": get_input_hash(payload),
-        "outputhash": None,
-        "provenancetoken": str(uuid.uuid4()),
+        "commitsha": commitsha,
+        "inputhash": inputhash or "",
+        "outputhash": outputhash,
+        "provenancetoken": provenancetoken
     }
-    provenance_token["outputhash"] = get_output_hash(provenance_token)
 
-    provenance_bundle.append(provenance_token)
+    validateeventor_raise(event)
+
+    ensure_dir(PROV_DIR)
+    bundle_path = f"{PROV_DIR}/{provenancetoken}-bundle.json"
+    atomicwritejson(bundle_path, event)
+
+    return event
 
 def get_commit_sha():
     """
-    returns the current commit sha.
+    Returns the current commit sha.
     """
     try:
         return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
     except Exception:
         return "unknown"
-
-def get_input_hash(data):
-    """
-    returns the sha256 hash of the input data.
-    """
-    return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()

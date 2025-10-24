@@ -11,14 +11,19 @@ from agents.provenance import emitevent
 def run_pipeline(args):
     """Runs the full llm_echo pipeline."""
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-    output_dir = Path(args.outdir) / run_id
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    provenance_bundle = []
 
     # 1. Ingestion
     raw_data = ingest_from_config()
-    emitevent("ingestion", "ingestion", {"source": "reddit"}, provenance_bundle)
+    provenance_bundle = {
+        "source": "reddit",
+        "ingest_time": datetime.now(timezone.utc).isoformat(),
+        "run_id": run_id
+    }
+    emitevent(
+        module="ingestion",
+        eventtype="ingestion_complete",
+        payload={"source": "reddit", "status": "success"}
+    )
 
     # 2. Generate Dummy Queries
     dummy_claims = [{"canonicalid": "1", "canonicaltext": "test claim"}]
@@ -32,14 +37,12 @@ def run_pipeline(args):
         if claim_id not in all_evidence:
             all_evidence[claim_id] = []
         all_evidence[claim_id].extend(evidence)
-    emitevent("evidence_retrieval", "evidence_retrieval", {"evidence_count": len(all_evidence)}, provenance_bundle)
 
-    # 4. Provenance Bundle
-    provenance_dir = Path(".github/PROVENANCE")
-    provenance_dir.mkdir(parents=True, exist_ok=True)
-    provenance_bundle_path = provenance_dir / f"{run_id}-bundle.json"
-    with open(provenance_bundle_path, "w") as f:
-        json.dump(provenance_bundle, f, indent=2)
+    emitevent(
+        module="evidence_retrieval",
+        eventtype="evidence_retrieval_complete",
+        payload={"evidence_count": len(all_evidence), "status": "success"}
+    )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="llm_echo pipeline")
