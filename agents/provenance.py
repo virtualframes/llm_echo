@@ -1,33 +1,35 @@
 import json
-import uuid
+import hashlib
 from datetime import datetime, timezone
-from pathlib import Path
 import subprocess
 
-PROV_DIR = Path(".github/PROVENANCE")
-PROV_DIR.mkdir(parents=True, exist_ok=True)
-LOG_FILE = PROV_DIR / "audit_trace.jsonl"
+def emitevent(eventtype, payload, provenance_bundle):
+    """
+    emits a provenance event and adds it to the bundle.
+    """
 
-def current_git_short_sha():
-    try:
-        out = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL).decode().strip()
-        return out
-    except Exception:
-        return None
-
-def emit(event_type: str, payload: dict, agent: str = "jules-v0.1"):
-    entry = {
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "agent": agent,
-        "event_type": event_type,
+    provenance_token = {
+        "eventtype": eventtype,
+        "timestampiso": datetime.now(timezone.utc).isoformat(),
         "payload": payload,
-        "git_commit": current_git_short_sha()
+        "commitsha": get_commit_sha(),
+        "inputhash": get_input_hash(payload),
+        "outputhash": None,
     }
-    with open(LOG_FILE, "a", encoding="utf-8") as fh:
-        fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    return entry
 
-def input_sha256_text(s: str):
-    import hashlib
-    return hashlib.sha256((s or "").encode("utf-8")).hexdigest()
+    provenance_bundle.append(provenance_token)
+
+def get_commit_sha():
+    """
+    returns the current commit sha.
+    """
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+    except Exception:
+        return "unknown"
+
+def get_input_hash(data):
+    """
+    returns the sha256 hash of the input data.
+    """
+    return hashlib.sha256(json.dumps(data).encode()).hexdigest()

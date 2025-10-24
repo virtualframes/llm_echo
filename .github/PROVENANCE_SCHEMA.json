@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Provenance Event",
+  "description": "Schema for provenance events in the llm_echo pipeline.",
+  "type": "object",
+  "properties": {
+    "eventtype": {
+      "description": "The type of the event.",
+      "type": "string"
+    },
+    "timestampiso": {
+      "description": "The ISO 8601 timestamp of the event.",
+      "type": "string",
+      "format": "date-time"
+    },
+    "module": {
+      "description": "The module that emitted the event.",
+      "type": "string"
+    },
+    "commitsha": {
+      "description": "The git commit SHA of the code that generated the event.",
+      "type": "string"
+    },
+    "inputhash": {
+      "description": "The SHA256 hash of the input data.",
+      "type": "string"
+    },
+    "outputhash": {
+      "description": "The SHA256 hash of the output data.",
+      "type": "string"
+    },
+    "provenancetoken": {
+      "description": "A unique token for the provenance event.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "eventtype",
+    "timestampiso",
+    "module",
+    "commitsha",
+    "inputhash",
+    "outputhash",
+    "provenancetoken"
+  ]
+}

@@ -5,3 +5,4 @@ visualizations/
 .github/PROVENANCE/
 *.pyc
 http_cache.sqlite
+http_cache.sqlite

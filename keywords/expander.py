@@ -4,8 +4,9 @@ import glob
 import subprocess
 from pathlib import Path
 from collections import Counter
+from typing import List, Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
-from agents.provenance import emit
+from agents import provenance
 import datetime
 from datetime import timezone
 
@@ -51,7 +52,41 @@ def cooccurrence_expand(seed_list: list[str], texts: list[str], window: int = 40
 
     return [term for term, count in cooccurrence_counts.most_common(top_k)]
 
-def save_expanded(run_id: str, expanded: list[str], provenance_id: str) -> Path:
+def generate_deepseek_queries(canonical_claims: List[Dict[str, str]]) -> List[Dict[str, str]]:
+    """Generates DeepSeek query variants from canonical claims."""
+    queries = []
+    for claim in canonical_claims:
+        claim_text = claim["canonicaltext"]
+        claim_id = claim["canonicalid"]
+
+        # Concise variant
+        queries.append({
+            "claimid": claim_id,
+            "query": claim_text,
+            "variant": "concise",
+            "topk": 20
+        })
+
+        # Mechanism-focused variant
+        queries.append({
+            "claimid": claim_id,
+            "query": f"How does {claim_text} work?",
+            "variant": "mechanism-focused",
+            "topk": 20
+        })
+
+        # Skeptic-focused variant
+        queries.append({
+            "claimid": claim_id,
+            "query": f"What is the evidence against the claim that {claim_text}?",
+            "variant": "skeptic-focused",
+            "topk": 20
+        })
+
+    return queries
+
+
+def save_expanded(run_id: str, expanded: list[str], provenance_id: str, provenance_bundle: list) -> Path:
     """Saves the expanded keywords to a file."""
     output_dir = Path("data/keywords")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -73,5 +108,5 @@ def save_expanded(run_id: str, expanded: list[str], provenance_id: str) -> Path:
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    emit("expanded_keywords_saved", {"path": str(output_path)})
+    provenance.emitevent("expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
     return output_path
