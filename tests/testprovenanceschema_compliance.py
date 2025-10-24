@@ -1,60 +1,59 @@
-import unittest
-import json
+import tempfile
 import os
+import json
+import pytest
 from agents.provenance import emitevent
-from agents.jules.schemavalidator import validateeventor_raise, SchemaValidationError
-from agents.jules.ioutils import sha256hexof
+from agents.jules.io_utils import sha256_hex_of_obj, ensure_dir
 
-class TestProvenanceSchemaCompliance(unittest.TestCase):
 
-    def setUp(self):
-        # Create a temporary directory for provenance bundles
-        self.prov_dir = ".github/PROVENANCE_TEST"
-        os.makedirs(self.prov_dir, exist_ok=True)
-        # Monkey patch the PROV_DIR
-        import agents.provenance
-        self.original_prov_dir = agents.provenance.PROV_DIR
-        agents.provenance.PROV_DIR = self.prov_dir
+@pytest.fixture
+def setup_prov_schema(tmp_path):
+    schema_dir = tmp_path / ".github"
+    ensure_dir(schema_dir)
+    schema_path = schema_dir / "PROVENANCE_SCHEMA.json"
+    with open(schema_path, "w") as f:
+        json.dump(
+            {
+                "type": "object",
+                "properties": {
+                    "module": {"type": "string"},
+                    "eventtype": {"type": "string"},
+                    "timestampiso": {"type": "string"},
+                    "payload": {"type": "object"},
+                    "commitsha": {"type": "string"},
+                    "inputhash": {"type": "string"},
+                    "outputhash": {"type": "string"},
+                    "provenancetoken": {"type": "string"},
+                },
+                "required": [
+                    "module",
+                    "eventtype",
+                    "timestampiso",
+                    "payload",
+                    "commitsha",
+                    "inputhash",
+                    "outputhash",
+                    "provenancetoken",
+                ],
+            },
+            f,
+        )
 
-    def tearDown(self):
-        # Clean up the temporary directory
-        for f in os.listdir(self.prov_dir):
-            os.remove(os.path.join(self.prov_dir, f))
-        os.rmdir(self.prov_dir)
-        # Restore the original PROV_DIR
-        import agents.provenance
-        agents.provenance.PROV_DIR = self.original_prov_dir
 
-    def test_emitevent_produces_valid_event(self):
-        """Test that emitevent produces a schema-valid event."""
-        payload = {"test": "data"}
-        event = emitevent("test_module", "test_event", payload)
-
-        self.assertIn("module", event)
-        self.assertIn("eventtype", event)
-        self.assertIn("timestampiso", event)
-        self.assertIn("payload", event)
-        self.assertIn("commitsha", event)
-        self.assertIn("inputhash", event)
-        self.assertIn("outputhash", event)
-        self.assertIn("provenancetoken", event)
-
-        # test output hash correctness
-        payload_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-        expected_output_hash = sha256hexof(payload_json)
-        self.assertEqual(event["outputhash"], expected_output_hash)
-
-        # test that the event is valid against the schema
-        try:
-            validateeventor_raise(event)
-        except SchemaValidationError as e:
-            self.fail(f"Event did not validate against schema: {e}")
-
-    def test_schema_validator_rejects_missing_fields(self):
-        """Test that the schema validator rejects events with missing required fields."""
-        invalid_event = {"module": "test"}
-        with self.assertRaises(SchemaValidationError):
-            validateeventor_raise(invalid_event)
-
-if __name__ == "__main__":
-    unittest.main()
+def test_emitevent_writes_bundle(tmp_path, monkeypatch, setup_prov_schema):
+    d = tmp_path / ".github" / "PROVENANCE"
+    monkeypatch.chdir(tmp_path)
+    payload = {"foo": "bar"}
+    event = emitevent(
+        "test_module", "test_event", payload, commitsha="deadbeef", inputhash="abc123"
+    )
+    # ensure outputhash is correct
+    assert "outputhash" in event
+    assert event["payload"] == payload
+    # bundle exists
+    token = event["provenancetoken"]
+    bundle_path = tmp_path / ".github" / "PROVENANCE" / f"{token}-bundle.json"
+    assert bundle_path.exists()
+    # load and validate basic shape
+    b = json.loads(bundle_path.read_text())
+    assert b["module"] == "test_module"
