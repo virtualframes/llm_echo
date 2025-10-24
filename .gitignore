@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+data/
+visualizations/
+.github/PROVENANCE/
+*.pyc
+http_cache.sqlite
