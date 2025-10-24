@@ -38,6 +38,12 @@ def deepseekquery(query_obj: Dict[str, Any], provenance_bundle: List[Dict[str, A
             normalized_response = normalize_response(data)
 
             provenance.emitevent(
+                "deepseekquery",
+                {
+                    "query": query_obj,
+                    "response": normalized_response,
+                    "mode": "real" if os.environ.get("USEREALDEEPSEEK") == "true" else "mock",
+                },
                 "deepseekadapter",
                 "deepseekquery",
                 redact_provenance_payload(query_obj, normalized_response),
