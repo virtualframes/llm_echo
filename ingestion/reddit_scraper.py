@@ -39,7 +39,8 @@ def fetch_reddit_json(subreddit: str, limit: int = 100):
             "author_hash": sha256_hex(author),
             "created_utc": int(d.get("created_utc", 0)),
             "num_comments": int(d.get("num_comments", 0)),
-            "subreddit": f"r/{d.get('subreddit', '')}"
+            "subreddit": f"r/{d.get('subreddit', '')}",
+            "claims": [], # Placeholder for claims
         })
     return out
 

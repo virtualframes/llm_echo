@@ -1,94 +1,56 @@
 import argparse
 import json
+from datetime import datetime, timezone
 from pathlib import Path
+
 from ingestion.reddit_scraper import ingest_from_config
-from agents.hallucination_auditor import audit_threads
-from agents.provenance import emit
-from keywords.expander import (
-    extract_candidates,
-    tfidf_candidates,
-    cooccurrence_expand,
-    save_expanded,
-)
-from agents.contradiction_detector import (
-    discover_candidates,
-    fetch_and_verify,
-    score_contradictions,
-    attach_to_audit,
-)
-from docs.generate_docs import generate_keywords_doc, generate_contradictions_doc
-import glob
+from keywords.expander import generate_deepseek_queries
+from search.deepseekadapter import deepseekquery
+from agents.provenance import emitevent
 
-def run_pipeline(config="ingestion/subreddits.json", dry_run=False, seed=42, stage="all"):
-    emit("run_start", {"config": config, "dry_run": dry_run, "seed": seed, "stage": stage})
+def run_pipeline(args):
+    """Runs the full llm_echo pipeline."""
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    output_dir = Path(args.outdir) / run_id
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    if stage in ["all", "ingest"]:
-        if not dry_run:
-            ingest_from_config(config)
+    provenance_bundle = []
 
-    if stage in ["all", "audit"]:
-        src_dir = Path("data/raw")
-        out_dir = Path("data/audits")
-        out_dir.mkdir(parents=True, exist_ok=True)
-        ndjson_files = glob.glob(str(src_dir / "*_threads.ndjson"))
-        for f in ndjson_files:
-            emit("ingested_threads", {"file": f})
-            audits = audit_threads(f, seed=seed)
-            base = Path(f).stem.replace("_threads", "")
-            outfile = out_dir / f"{base}_audits.json"
-            with open(outfile, "w", encoding="utf-8") as fh:
-                json.dump(audits, fh, indent=2)
-            emit("audits_saved", {"outfile": str(outfile), "count": len(audits)})
+    # 1. Ingestion
+    raw_data = ingest_from_config()
+    emitevent("ingestion", "ingestion", {"source": "reddit"}, provenance_bundle)
 
-    if stage in ["all", "expand_contradict"]:
-        # Keyword Expansion
-        raw_files_glob = "data/raw/*_threads.ndjson"
-        texts = []
-        for f in glob.glob(raw_files_glob):
-             with open(f, "r", encoding="utf-8") as fh:
-                for line in fh:
-                    texts.append(json.loads(line).get("selftext", ""))
+    # 2. Generate Dummy Queries
+    dummy_claims = [{"canonicalid": "1", "canonicaltext": "test claim"}]
+    deepseek_queries = generate_deepseek_queries(dummy_claims)
 
-        run_id = f"{seed}_{Path(config).stem}"
-        expanded_keywords = cooccurrence_expand(["ai", "llm"], texts)
-        prov_id = emit("keywords_expanded", {"count": len(expanded_keywords)})["id"]
-        save_expanded(run_id, expanded_keywords, prov_id)
+    # 3. Evidence Retrieval (DeepSeek)
+    all_evidence = {}
+    for query in deepseek_queries:
+        evidence = deepseekquery(query, provenance_bundle)
+        claim_id = query["claimid"]
+        if claim_id not in all_evidence:
+            all_evidence[claim_id] = []
+        all_evidence[claim_id].extend(evidence)
+    emitevent("evidence_retrieval", "evidence_retrieval", {"evidence_count": len(all_evidence)}, provenance_bundle)
 
-        # Contradiction Detection
-        audit_files = glob.glob("data/audits/*_audits.json")
-        for audit_file in audit_files:
-            with open(audit_file, "r", encoding="utf-8") as fh:
-                audits = json.load(fh)
-
-            for audit in audits:
-                if "GPT_style" in audit["flags"] or "CitationPattern" in audit["flags"]:
-                    candidates = [{"scoreable_text": audit["title"] + " " + audit.get("selftext", "")}]
-                    verified_evidence = fetch_and_verify(candidates)
-                    score = score_contradictions(verified_evidence)
-                    attach_to_audit(audit, verified_evidence, score)
-
-            with open(audit_file, "w", encoding="utf-8") as fh:
-                json.dump(audits, fh, indent=2)
-            emit("contradictions_attached", {"file": audit_file})
-
-    if stage in ["all", "doc"]:
-        run_id = f"{seed}_{Path(config).stem}"
-        keywords_file = f"data/keywords/expanded_keywords_{run_id}.json"
-        contradictions_glob = "data/contradictions/*.json"
-
-        if Path(keywords_file).exists():
-            generate_keywords_doc(keywords_file, "docs/KEYWORDS.md", run_id)
-
-        if glob.glob(contradictions_glob):
-            generate_contradictions_doc(contradictions_glob, "docs/CONTRADICTIONS.md")
-
-    emit("run_finish", {"success": True})
+    # 4. Provenance Bundle
+    provenance_dir = Path(".github/PROVENANCE")
+    provenance_dir.mkdir(parents=True, exist_ok=True)
+    provenance_bundle_path = provenance_dir / f"{run_id}-bundle.json"
+    with open(provenance_bundle_path, "w") as f:
+        json.dump(provenance_bundle, f, indent=2)
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="ingestion/subreddits.json")
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--stage", default="all", choices=["all", "ingest", "audit", "expand_contradict", "doc"])
+    parser = argparse.ArgumentParser(description="llm_echo pipeline")
+    parser.add_argument("--sample", type=str, help="Path to sample data")
+    parser.add_argument("--mock-deepseek", action="store_true", help="Use mock DeepSeek server")
+    parser.add_argument("--limit", type=int, default=50, help="Limit number of items to process")
+    parser.add_argument("--outdir", type=str, default="out/pr3", help="Output directory")
     args = parser.parse_args()
-    run_pipeline(config=args.config, dry_run=args.dry_run, seed=args.seed, stage=args.stage)
+
+    if args.mock_deepseek:
+        import os
+        os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
+
+    run_pipeline(args)

@@ -1,33 +1,47 @@
 import json
-import uuid
+import hashlib
 from datetime import datetime, timezone
-from pathlib import Path
 import subprocess
+import uuid
 
-PROV_DIR = Path(".github/PROVENANCE")
-PROV_DIR.mkdir(parents=True, exist_ok=True)
-LOG_FILE = PROV_DIR / "audit_trace.jsonl"
+def get_output_hash(token):
+    """
+    Calculates the SHA256 hash of a provenance token, excluding the outputhash field.
+    """
+    token_copy = token.copy()
+    token_copy.pop("outputhash", None)
+    return get_input_hash(token_copy)
 
-def current_git_short_sha():
-    try:
-        out = subprocess.check_output(["git", "rev-parse", "--short", "HEAD"], stderr=subprocess.DEVNULL).decode().strip()
-        return out
-    except Exception:
-        return None
+def emitevent(module, eventtype, payload, provenance_bundle):
+    """
+    emits a provenance event and adds it to the bundle.
+    """
 
-def emit(event_type: str, payload: dict, agent: str = "jules-v0.1"):
-    entry = {
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
-        "agent": agent,
-        "event_type": event_type,
+    provenance_token = {
+        "module": module,
+        "eventtype": eventtype,
+        "timestampiso": datetime.now(timezone.utc).isoformat(),
         "payload": payload,
-        "git_commit": current_git_short_sha()
+        "commitsha": get_commit_sha(),
+        "inputhash": get_input_hash(payload),
+        "outputhash": None,
+        "provenancetoken": str(uuid.uuid4()),
     }
-    with open(LOG_FILE, "a", encoding="utf-8") as fh:
-        fh.write(json.dumps(entry, ensure_ascii=False) + "\n")
-    return entry
+    provenance_token["outputhash"] = get_output_hash(provenance_token)
 
-def input_sha256_text(s: str):
-    import hashlib
-    return hashlib.sha256((s or "").encode("utf-8")).hexdigest()
+    provenance_bundle.append(provenance_token)
+
+def get_commit_sha():
+    """
+    returns the current commit sha.
+    """
+    try:
+        return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
+    except Exception:
+        return "unknown"
+
+def get_input_hash(data):
+    """
+    returns the sha256 hash of the input data.
+    """
+    return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()

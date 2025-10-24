@@ -5,3 +5,8 @@ kaleido
 pytest
 scikit-learn
 requests-cache
+transformers
+sentencepiece
+uvicorn
+fastapi
+jsonschema
