@@ -1,0 +1,7 @@
+requests
+pandas
+plotly
+kaleido
+pytest
+scikit-learn
+requests-cache
