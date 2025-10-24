@@ -4,6 +4,7 @@ from search.deepseekadapter import deepseekquery
 
 from search.deepseekadapter import normalize_response
 
+
 def test_deepseekquery_mock():
     os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
     query_obj = {"model": "deepseek-chat", "messages": [{"role": "user", "content": "test"}]}
@@ -11,6 +12,7 @@ def test_deepseekquery_mock():
     response = deepseekquery(query_obj, provenance_bundle)
     assert response[0]["snippet"] == "This is the first mock snippet."
     assert len(provenance_bundle) == 1
+
 
 def test_normalize_response():
     """
@@ -20,7 +22,7 @@ def test_normalize_response():
         "choices": [
             {
                 "message": {
-                    "content": "[{\"id\": \"1\", \"url\": \"https://example.com/1\", \"snippet\": \"This is the first mock snippet.\", \"title\": \"Mock Title 1\", \"score\": 0.9}, {\"id\": \"2\", \"url\": \"https://example.com/2\", \"snippet\": \"This is the second mock snippet.\", \"title\": \"Mock Title 2\", \"score\": 0.8}]"
+                    "content": '[{"id": "1", "url": "https://example.com/1", "snippet": "This is the first mock snippet.", "title": "Mock Title 1", "score": 0.9}, {"id": "2", "url": "https://example.com/2", "snippet": "This is the second mock snippet.", "title": "Mock Title 2", "score": 0.8}]'
                 }
             }
         ]

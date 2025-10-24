@@ -1,6 +1,7 @@
 """
 Example usage of the Jules agentic audit pipeline
 """
+
 from jules import JulesAgent, Config
 
 # Example 1: Basic usage with default configuration
@@ -40,9 +41,9 @@ print(f"✓ Total flagged: {stats['total_flagged']}")
 print(f"✓ Avg hallucination score: {stats['avg_hallucination_score']:.2f}")
 print(f"✓ Avg echo score: {stats['avg_echo_score']:.2f}")
 
-if stats['by_subreddit']:
+if stats["by_subreddit"]:
     print("\nBy Subreddit:")
-    for subreddit, count in stats['by_subreddit'].items():
+    for subreddit, count in stats["by_subreddit"].items():
         print(f"  - r/{subreddit}: {count}")
 
 print("\n" + "=" * 60)

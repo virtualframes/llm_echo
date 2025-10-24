@@ -8,6 +8,7 @@ from keywords.expander import generate_deepseek_queries
 from search.deepseekadapter import deepseekquery
 from agents.provenance import emitevent
 
+
 def run_pipeline(args):
     """Runs the full llm_echo pipeline."""
     run_id = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -17,12 +18,12 @@ def run_pipeline(args):
     provenance_bundle = {
         "source": "reddit",
         "ingest_time": datetime.now(timezone.utc).isoformat(),
-        "run_id": run_id
+        "run_id": run_id,
     }
     emitevent(
         module="ingestion",
         eventtype="ingestion_complete",
-        payload={"source": "reddit", "status": "success"}
+        payload={"source": "reddit", "status": "success"},
     )
 
     # 2. Generate Dummy Queries
@@ -41,8 +42,9 @@ def run_pipeline(args):
     emitevent(
         module="evidence_retrieval",
         eventtype="evidence_retrieval_complete",
-        payload={"evidence_count": len(all_evidence), "status": "success"}
+        payload={"evidence_count": len(all_evidence), "status": "success"},
     )
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="llm_echo pipeline")
@@ -54,6 +56,7 @@ if __name__ == "__main__":
 
     if args.mock_deepseek:
         import os
+
         os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
 
     run_pipeline(args)

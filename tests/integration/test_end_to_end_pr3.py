@@ -2,6 +2,7 @@ import pytest
 import os
 import subprocess
 
+
 def test_end_to_end_pr3():
     # Set the mock URL
     os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
