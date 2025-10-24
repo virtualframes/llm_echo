@@ -87,7 +87,8 @@ class AuditPRGenerator:
                 template += f"(similarity: {chain.get('similarity', 0):.2f})\n"
             template += "\n"
 
-        template += """## Community Audit Checklist
+        template += (
+            """## Community Audit Checklist
 
 Please review the flagged content and check the applicable items:
 
@@ -108,10 +109,13 @@ Please review the flagged content and check the applicable items:
 
 ---
 
-**Audit Timestamp**: {flagged_post['timestamp']}
+**Audit Timestamp**: """
+            + flagged_post["timestamp"]
+            + """
 **Jules Version**: 0.1.0
 **Detection Method**: Automated analysis with human verification required
 """
+        )
 
         # Write template file
         with open(filepath, "w") as f:
