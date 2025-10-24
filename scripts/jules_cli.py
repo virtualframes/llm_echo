@@ -10,7 +10,6 @@ from search.deepseekadapter import deepseekquery
 from agents.jules.qodo_reader import parse_qodo_comment_body
 
 SCRAPEDO_URL = "https://api.scrape.do/render"
-SCRAPEDO_API_KEY = "your-hardcoded-scrapedo-key"
 
 
 def extract_url(text):
@@ -26,7 +25,8 @@ def fetch_html_via_scrapedo(url, api_key):
 
 
 def scrape(args):
-    html = fetch_html_via_scrapedo(args.url, SCRAPEDO_API_KEY)
+    api_key = os.environ.get("SCRAPEDO_API_KEY")
+    html = fetch_html_via_scrapedo(args.url, api_key)
     provenance_bundle = {"source": args.url, "claimid": args.claimid, "ingesttime": None}
     payload = deepseekquery(html, provenance_bundle=provenance_bundle)
     input_hash = sha256_hex_of_obj({"url": args.url, "claimid": args.claimid})
