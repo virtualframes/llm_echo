@@ -50,6 +50,10 @@ data/
 *.csv
 *.json.gz
 
+# Audit artifacts
+audit_templates/
+visualizations/
+
 # Environment
 .env
 .env.local
