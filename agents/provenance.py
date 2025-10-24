@@ -44,4 +44,4 @@ def get_input_hash(data):
     """
     returns the sha256 hash of the input data.
     """
-    return hashlib.sha256(json.dumps(data).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(data, sort_keys=True).encode()).hexdigest()

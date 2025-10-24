@@ -45,6 +45,7 @@
     "commitsha",
     "inputhash",
     "outputhash",
+    "payload",
     "provenancetoken"
   ]
 }

@@ -15,7 +15,11 @@ def deepseekquery(query_obj: Dict[str, Any], provenance_bundle: List[Dict[str, A
     """
     Queries the DeepSeek API with the given query object.
     """
-    if os.environ.get("USEREALDEEPSEEK") == "true":
+    mock_url = os.environ.get("DEEPSEEKMOCKURL")
+    if mock_url:
+        headers = {"Content-Type": "application/json"}
+        url = mock_url
+    else:
         api_key = os.environ.get("DEEPSEEK_API_KEY")
         if not api_key:
             raise ValueError("DEEPSEEK_API_KEY environment variable not set")
@@ -24,9 +28,6 @@ def deepseekquery(query_obj: Dict[str, Any], provenance_bundle: List[Dict[str, A
             "Authorization": f"Bearer {api_key}",
         }
         url = DEEPSEEK_API_URL
-    else:
-        headers = {"Content-Type": "application/json"}
-        url = os.environ.get("DEEPSEEKMOCKURL", "http://localhost:8000/v1/chat/completions")
 
     for attempt in range(RETRY_ATTEMPTS):
         try:
@@ -88,12 +89,12 @@ def redact_provenance_payload(query_obj: Dict[str, Any], normalized_response: Li
     if "api_key" in redacted_query:
         del redacted_query["api_key"]
     if "messages" in redacted_query:
-        redacted_query["messages_hash"] = hashlib.sha256(json.dumps(redacted_query["messages"]).encode()).hexdigest()
+        redacted_query["messages_hash"] = hashlib.sha256(json.dumps(redacted_query["messages"], sort_keys=True).encode()).hexdigest()
         del redacted_query["messages"]
 
 
     return {
         "query": redacted_query,
-        "response_hash": hashlib.sha256(json.dumps(normalized_response).encode()).hexdigest(),
+        "response_hash": hashlib.sha256(json.dumps(normalized_response, sort_keys=True).encode()).hexdigest(),
         "mode": "real" if os.environ.get("USEREALDEEPSEEK") == "true" else "mock",
     }

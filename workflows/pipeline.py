@@ -35,7 +35,9 @@ def run_pipeline(args):
     emitevent("evidence_retrieval", "evidence_retrieval", {"evidence_count": len(all_evidence)}, provenance_bundle)
 
     # 4. Provenance Bundle
-    provenance_bundle_path = Path(".github/PROVENANCE") / f"{run_id}-bundle.json"
+    provenance_dir = Path(".github/PROVENANCE")
+    provenance_dir.mkdir(parents=True, exist_ok=True)
+    provenance_bundle_path = provenance_dir / f"{run_id}-bundle.json"
     with open(provenance_bundle_path, "w") as f:
         json.dump(provenance_bundle, f, indent=2)
 
@@ -49,6 +51,6 @@ if __name__ == "__main__":
 
     if args.mock_deepseek:
         import os
-        os.environ["USEREALDEEPSEEK"] = "false"
+        os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
 
     run_pipeline(args)

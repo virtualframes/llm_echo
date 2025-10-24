@@ -5,7 +5,7 @@ from search.deepseekadapter import deepseekquery
 from search.deepseekadapter import normalize_response
 
 def test_deepseekquery_mock():
-    os.environ["USEREALDEEPSEEK"] = "false"
+    os.environ["DEEPSEEKMOCKURL"] = "http://localhost:8000/v1/chat/completions"
     query_obj = {"model": "deepseek-chat", "messages": [{"role": "user", "content": "test"}]}
     provenance_bundle = []
     response = deepseekquery(query_obj, provenance_bundle)
