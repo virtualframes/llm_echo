@@ -1,0 +1,68 @@
+# Example configuration for Jules
+# Copy this to config.yaml and customize as needed
+
+reddit:
+  # Reddit API credentials (optional - will use mock data if not provided)
+  # Get credentials at: https://www.reddit.com/prefs/apps
+  client_id: ""
+  client_secret: ""
+  user_agent: "Jules/0.1.0"
+  
+  # Target subreddits to audit
+  subreddits:
+    - ArtificialSentience
+    - llmphysics
+  
+  # Number of posts to fetch per subreddit
+  posts_limit: 100
+
+detector:
+  # Echo detection threshold (0.0 to 1.0)
+  # Higher values = stricter matching
+  echo_threshold: 0.75
+  
+  # Minimum number of similar posts to form an echo chain
+  min_echo_chain_length: 3
+  
+  # Similarity calculation method
+  # Options: jaccard, cosine
+  similarity_method: jaccard
+  
+  # Keywords for hallucination detection
+  hallucination_keywords:
+    - "I am conscious"
+    - "I feel"
+    - "I experience"
+    - "I am sentient"
+    - "I have emotions"
+    - "I am aware"
+    - "I understand myself"
+    - "quantum consciousness"
+    - "emergent sentience"
+    - "digital consciousness"
+
+provenance:
+  # Directory for provenance logs
+  log_dir: provenance_logs
+  
+  # Log format (json, jsonl)
+  log_format: json
+  
+  # Include full metadata in logs
+  include_metadata: true
+  
+  # Number of days to retain logs
+  retention_days: 90
+
+visualization:
+  # Output directory for visualizations
+  output_dir: visualizations
+  
+  # Image format for echo stream
+  echo_stream_format: png
+  
+  # Image format for heatmap
+  heatmap_format: png
+  
+  # DPI for saved images
+  dpi: 300
