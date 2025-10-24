@@ -1,47 +1,29 @@
 import json
 import uuid
-from datetime import datetime
-import subprocess
-from agents.jules.schemavalidator import validateeventor_raise
-from agents.jules.ioutils import sha256hexof, ensure_dir, atomicwritejson
+from datetime import datetime, timezone
+from agents.jules.schema_validator import validate_event_or_raise
+from agents.jules.io_utils import sha256_hex_of_obj, ensure_dir, atomic_write_json
 
 PROV_DIR = ".github/PROVENANCE"
 
-def emitevent(module, eventtype, payload, commitsha=None, inputhash=None):
-    """
-    Emits a provenance event, validates it, and writes it to a file.
-    """
-    if commitsha is None:
-        commitsha = get_commit_sha()
 
-    payload_json = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    outputhash = sha256hexof(payload_json)
-    provenancetoken = str(uuid.uuid4())
-
+def emitevent(module: str, payload: dict, commitsha: str = None, inputhash: str = None):
+    output_hash = sha256_hex_of_obj(payload)
+    provenance_token = str(uuid.uuid4())
     event = {
         "module": module,
-        "eventtype": eventtype,
-        "timestampiso": datetime.utcnow().isoformat() + "Z",
+        "eventtype": "evidence_emitted",
+        "timestampiso": datetime.now(timezone.utc).isoformat(),
         "payload": payload,
-        "commitsha": commitsha,
+        "commitsha": commitsha or "",
         "inputhash": inputhash or "",
-        "outputhash": outputhash,
-        "provenancetoken": provenancetoken
+        "outputhash": output_hash,
+        "provenancetoken": provenance_token,
     }
-
-    validateeventor_raise(event)
-
+    # Validate schema
+    validate_event_or_raise(event)
+    # Write atomically
     ensure_dir(PROV_DIR)
-    bundle_path = f"{PROV_DIR}/{provenancetoken}-bundle.json"
-    atomicwritejson(bundle_path, event)
-
+    bundle_path = f"{PROV_DIR}/{provenance_token}-bundle.json"
+    atomic_write_json(bundle_path, event)
     return event
-
-def get_commit_sha():
-    """
-    Returns the current commit sha.
-    """
-    try:
-        return subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("ascii").strip()
-    except Exception:
-        return "unknown"
