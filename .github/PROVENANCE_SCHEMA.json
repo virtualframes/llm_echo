@@ -29,6 +29,10 @@
       "description": "The SHA256 hash of the output data.",
       "type": "string"
     },
+    "payload": {
+        "description": "The payload of the event.",
+        "type": "object"
+    },
     "provenancetoken": {
       "description": "A unique token for the provenance event.",
       "type": "string"
@@ -41,6 +45,7 @@
     "commitsha",
     "inputhash",
     "outputhash",
+    "payload",
     "provenancetoken"
   ]
 }

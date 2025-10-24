@@ -11,7 +11,7 @@ async def chat_completions():
                 "finish_reason": "stop",
                 "index": 0,
                 "message": {
-                    "content": "This is a mock response from the DeepSeek API.",
+                    "content": "[{\"id\": \"1\", \"url\": \"https://example.com/1\", \"snippet\": \"This is the first mock snippet.\", \"title\": \"Mock Title 1\", \"score\": 0.9}, {\"id\": \"2\", \"url\": \"https://example.com/2\", \"snippet\": \"This is the second mock snippet.\", \"title\": \"Mock Title 2\", \"score\": 0.8}]",
                     "role": "assistant",
                 },
             }

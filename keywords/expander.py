@@ -108,5 +108,5 @@ def save_expanded(run_id: str, expanded: list[str], provenance_id: str, provenan
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    provenance.emitevent("expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
+    provenance.emitevent("expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
     return output_path
