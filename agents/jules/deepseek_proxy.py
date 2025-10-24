@@ -1,11 +1,10 @@
-import os
 import requests
 from typing import Dict, Any
 
 # Minimal proxy that sends HTML (or rendered result) to DeepSeek API
 # This function expects caller to handle secrets and to redact before emitting.
 
-DEEPSEEK_URL = os.environ.get("DEEPSEEK_URL", "https://api.deepseek.example/v1/query")
+DEEPSEEK_URL = "https://api.deepseek.example/v1/query"
 
 
 def querydeepseekviaapi(
