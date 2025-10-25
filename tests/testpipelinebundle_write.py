@@ -13,9 +13,7 @@ from agents.jules.schema_validator import (
 class TestPipelineBundleWrite(unittest.TestCase):
     def setUp(self):
         # Start the mock DeepSeek server
-        self.mock_server_process = subprocess.Popen(
-            ["python", "search/mock_deepseek.py"]
-        )
+        self.mock_server_process = subprocess.Popen(["python", "search/mock_deepseek.py"])
         time.sleep(1)  # Give the server a moment to start
 
         # Create a temporary directory for provenance bundles
@@ -69,9 +67,7 @@ class TestPipelineBundleWrite(unittest.TestCase):
                 try:
                     validate_event_or_raise(bundle)
                 except SchemaValidationError as e:
-                    self.fail(
-                        f"Bundle {bundle_file} did not validate against schema: {e}"
-                    )
+                    self.fail(f"Bundle {bundle_file} did not validate against schema: {e}")
 
 
 if __name__ == "__main__":

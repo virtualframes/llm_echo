@@ -1,5 +1,6 @@
 import requests
 from typing import Dict, Any, List
+from search.deepseekadapter import DEEPSEEK_URL
 
 
 def redact(obj: Any) -> Any:
@@ -12,8 +13,6 @@ def redact(obj: Any) -> Any:
 
 # Minimal proxy that sends HTML (or rendered result) to DeepSeek API
 # This function expects caller to handle secrets and to redact before emitting.
-
-DEEPSEEK_URL = "https://api.deepseek.example/v1/chat/completions"
 
 
 def querydeepseekviaapi(
