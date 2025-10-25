@@ -112,7 +112,5 @@ def save_expanded(
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    emitevent(
-        "expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle
-    )
+    emitevent("expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
     return output_path

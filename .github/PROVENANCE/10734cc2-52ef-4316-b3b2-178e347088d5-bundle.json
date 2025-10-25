@@ -1,0 +1,18 @@
+{
+  "commitsha": "8b464e1bfc10faa194944cfc2376d42be609d409",
+  "eventtype": "evidence_retrieval_complete",
+  "inputhash": "",
+  "module": "evidence_retrieval",
+  "outputhash": "aa6bfe57584908a79e36f9b0d6161100c9a73927ba69eb4df3b1d8bacd6d0548",
+  "payload": {
+    "evidence_count": 1,
+    "status": "success",
+    "pipeline_args": "--mock-deepseek --limit 10 --outdir out/pr3_test",
+    "mock_server_metadata": {
+      "port": "ephemeral",
+      "response_summary": "mocked reply"
+    }
+  },
+  "provenancetoken": "10734cc2-52ef-4316-b3b2-178e347088d5",
+  "timestampiso": "2025-10-25T00:28:00.000000Z"
+}

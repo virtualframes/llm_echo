@@ -130,9 +130,7 @@ class ProvenanceLogger:
             # Extract date from filename
             try:
                 date_str = log_file.stem.split("_")[1]
-                file_date = datetime.strptime(date_str, "%Y%m%d").replace(
-                    tzinfo=timezone.utc
-                )
+                file_date = datetime.strptime(date_str, "%Y%m%d").replace(tzinfo=timezone.utc)
 
                 if file_date < cutoff_date:
                     log_file.unlink()

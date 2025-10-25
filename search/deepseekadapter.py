@@ -31,9 +31,7 @@ def normalize_response(raw_response):
         return {"provenancebundle": {}, "evidence": list(raw_response)}
 
     # Prefer explicit keys if present
-    provenance = (
-        raw_response.get("provenancebundle") or raw_response.get("provenance") or {}
-    )
+    provenance = raw_response.get("provenancebundle") or raw_response.get("provenance") or {}
     evidence = raw_response.get("evidence")
 
     # Fallbacks for common alternative shapes
@@ -53,8 +51,6 @@ def deepseekquery(html, provenance_bundle=None, instructions=None, schema=None):
     # call proxy or DeepSeek client and receive normalized evidence
     from agents.jules.deepseek_proxy import querydeepseekviaapi
 
-    result = querydeepseekviaapi(
-        html, instructions or "", schema or {}, provenance_bundle or {}
-    )
+    result = querydeepseekviaapi(html, instructions or "", schema or {}, provenance_bundle or {})
     # Use normalize_response so callers and tests get consistent output
     return normalize_response(result)

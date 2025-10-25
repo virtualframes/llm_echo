@@ -1,0 +1,13 @@
+{
+  "commitsha": "",
+  "eventtype": "evidence_retrieval_complete",
+  "inputhash": "",
+  "module": "evidence_retrieval",
+  "outputhash": "aa6bfe57584908a79e36f9b0d6161100c9a73927ba69eb4df3b1d8bacd6d0548",
+  "payload": {
+    "evidence_count": 1,
+    "status": "success"
+  },
+  "provenancetoken": "f89f7645-cccc-43c1-be74-b1617a9feec4",
+  "timestampiso": "2025-10-25T07:24:39.918038+00:00"
+}
