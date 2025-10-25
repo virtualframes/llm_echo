@@ -2,7 +2,7 @@
 
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 import os
 
@@ -83,7 +83,7 @@ class JulesAgent:
                     "hallucination_flags": hallucination_flags,
                     "echo_score": echo_score,
                     "echo_chains": echo_chains,
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
                 flagged_posts.append(flagged_post)
 
@@ -118,7 +118,7 @@ class JulesAgent:
             "total_posts": len(posts),
             "flagged_posts": len(flagged_posts),
             "subreddits": target_subreddits,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "visualizations": viz_files,
             "flagged_details": flagged_posts,
         }

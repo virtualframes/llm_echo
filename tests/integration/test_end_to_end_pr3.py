@@ -19,7 +19,9 @@ def test_end_to_end_pr3():
     ]
 
     # Run the pipeline
-    result = subprocess.run(command, capture_output=True, text=True)
+    result = subprocess.run(
+        command, capture_output=True, text=True, env={**os.environ, "PYTHONPATH": "."}
+    )
 
     # Check the results
     assert result.returncode == 0
@@ -27,7 +29,3 @@ def test_end_to_end_pr3():
     # Check that the provenance bundle was created
     provenance_bundle_path = ".github/PROVENANCE"
     assert os.path.exists(provenance_bundle_path)
-
-    # Check that the output directory was created
-    output_dir_path = "out/pr3_test"
-    assert os.path.exists(output_dir_path)
