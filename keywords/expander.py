@@ -10,7 +10,7 @@ from agents.provenance import emitevent
 from datetime import datetime, timezone
 
 
-def extract_candidates(corpus_paths: list[str], min_freq: int = 3) -> list[dict]:
+def extract_candidates(corpus_paths: List[str], min_freq: int = 3) -> List[Dict]:
     """Extracts noun phrases and multi-word expressions from a corpus."""
     phrase_counts = Counter()
     for path in glob.glob(corpus_paths):
@@ -26,7 +26,7 @@ def extract_candidates(corpus_paths: list[str], min_freq: int = 3) -> list[dict]
     return candidates
 
 
-def tfidf_candidates(texts: list[str], topn: int = 200) -> list[str]:
+def tfidf_candidates(texts: List[str], topn: int = 200) -> List[str]:
     """Extracts top N candidates based on TF-IDF scores."""
     if not texts:
         return []
@@ -36,8 +36,8 @@ def tfidf_candidates(texts: list[str], topn: int = 200) -> list[str]:
 
 
 def cooccurrence_expand(
-    seed_list: list[str], texts: list[str], window: int = 40, top_k: int = 30
-) -> list[str]:
+    seed_list: List[str], texts: List[str], window: int = 40, top_k: int = 30
+) -> List[str]:
     """Expands a seed list of keywords with co-occurring terms."""
     cooccurrence_counts = Counter()
     for text in texts:
@@ -89,7 +89,7 @@ def generate_deepseek_queries(canonical_claims: List[Dict[str, str]]) -> List[Di
 
 
 def save_expanded(
-    run_id: str, expanded: list[str], provenance_id: str, provenance_bundle: list
+    run_id: str, expanded: List[str], provenance_id: str, provenance_bundle: List
 ) -> Path:
     """Saves the expanded keywords to a file."""
     output_dir = Path("data/keywords")

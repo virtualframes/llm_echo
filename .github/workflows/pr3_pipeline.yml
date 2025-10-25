@@ -62,4 +62,37 @@ jobs:
         path: .github/PROVENANCE
     - name: Validate provenance schema
       run: |
-        python -c "import json; from jsonschema import validate; schema = json.load(open('.github/PROVENANCE_SCHEMA.json')); bundle = json.load(open('.github/PROVENANCE/$(basename .github/PROVENANCE/*-bundle.json)')); [validate(instance=item, schema=schema) for item in bundle]"
+        python - <<'PY'
+        import json, glob, sys, os
+        from jsonschema import validate, ValidationError
+
+        schema_path = '.github/PROVENANCE_SCHEMA.json'
+        prov_dir = '.github/PROVENANCE'
+        pattern = os.path.join(prov_dir, '*-bundle.json')
+
+        try:
+            schema = json.load(open(schema_path))
+        except FileNotFoundError:
+            sys.exit(f"Schema not found: {schema_path}")
+
+        files = sorted(glob.glob(pattern))
+        if not files:
+            sys.exit(f"No provenance bundles found matching: {pattern}")
+
+        failed = False
+        for p in files:
+            try:
+                with open(p, 'r') as f:
+                    bundle = json.load(f)
+                validate(instance=bundle, schema=schema)
+                print(f"Validated: {p}")
+            except (json.JSONDecodeError, ValidationError) as e:
+                print(f"Validation failed for {p}: {e}")
+                failed = True
+            except Exception as e:
+                print(f"Error reading/validating {p}: {e}")
+                failed = True
+
+        if failed:
+            sys.exit(1)
+        PY
