@@ -1,6 +1,7 @@
 import pytest
 from agents.claimcanonicalizer import canonicalize
 
+
 def test_canonicalize():
     claimtext = "This is a claim."
     canonical_form = canonicalize(claimtext)

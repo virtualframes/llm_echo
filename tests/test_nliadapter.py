@@ -1,6 +1,7 @@
 import pytest
 from agents.nliadapter import nli_status
 
+
 def test_nli_status():
     premise = "This is a premise."
     hypothesis = "This is a hypothesis."

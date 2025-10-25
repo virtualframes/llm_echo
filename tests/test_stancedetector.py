@@ -1,6 +1,7 @@
 import pytest
 from agents.stancedetector import detectstance
 
+
 def test_detectstance():
     replytext = "This is a reply."
     claim_id = "claim-1"

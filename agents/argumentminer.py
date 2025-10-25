@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+
 def tag_roles(text: str) -> List[Dict[str, Any]]:
     """
     Tags the roles of arguments in a text.

@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+
 def detectclaims(threadtext: str) -> List[Dict[str, Any]]:
     """
     Detects claims in a thread.

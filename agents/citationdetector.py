@@ -1,5 +1,6 @@
 from typing import List, Dict, Any
 
+
 def detectcitations(text: str) -> List[Dict[str, Any]]:
     """
     Detects citations in a text.

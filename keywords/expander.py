@@ -6,11 +6,11 @@ from pathlib import Path
 from collections import Counter
 from typing import List, Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
-from agents import provenance
-import datetime
-from datetime import timezone
+from agents.provenance import emitevent
+from datetime import datetime, timezone
 
-def extract_candidates(corpus_paths: list[str], min_freq: int = 3) -> list[dict]:
+
+def extract_candidates(corpus_paths: List[str], min_freq: int = 3) -> List[Dict]:
     """Extracts noun phrases and multi-word expressions from a corpus."""
     phrase_counts = Counter()
     for path in glob.glob(corpus_paths):
@@ -22,12 +22,11 @@ def extract_candidates(corpus_paths: list[str], min_freq: int = 3) -> list[dict]
                 phrases = re.findall(r"\b(?:\w+\s+){1,3}\w+\b", text)
                 phrase_counts.update(phrases)
 
-    candidates = [
-        {"phrase": p, "count": c} for p, c in phrase_counts.items() if c >= min_freq
-    ]
+    candidates = [{"phrase": p, "count": c} for p, c in phrase_counts.items() if c >= min_freq]
     return candidates
 
-def tfidf_candidates(texts: list[str], topn: int = 200) -> list[str]:
+
+def tfidf_candidates(texts: List[str], topn: int = 200) -> List[str]:
     """Extracts top N candidates based on TF-IDF scores."""
     if not texts:
         return []
@@ -35,7 +34,10 @@ def tfidf_candidates(texts: list[str], topn: int = 200) -> list[str]:
     vectorizer.fit_transform(texts)
     return vectorizer.get_feature_names_out().tolist()
 
-def cooccurrence_expand(seed_list: list[str], texts: list[str], window: int = 40, top_k: int = 30) -> list[str]:
+
+def cooccurrence_expand(
+    seed_list: List[str], texts: List[str], window: int = 40, top_k: int = 30
+) -> List[str]:
     """Expands a seed list of keywords with co-occurring terms."""
     cooccurrence_counts = Counter()
     for text in texts:
@@ -52,6 +54,7 @@ def cooccurrence_expand(seed_list: list[str], texts: list[str], window: int = 40
 
     return [term for term, count in cooccurrence_counts.most_common(top_k)]
 
+
 def generate_deepseek_queries(canonical_claims: List[Dict[str, str]]) -> List[Dict[str, str]]:
     """Generates DeepSeek query variants from canonical claims."""
     queries = []
@@ -60,33 +63,34 @@ def generate_deepseek_queries(canonical_claims: List[Dict[str, str]]) -> List[Di
         claim_id = claim["canonicalid"]
 
         # Concise variant
-        queries.append({
-            "claimid": claim_id,
-            "query": claim_text,
-            "variant": "concise",
-            "topk": 20
-        })
+        queries.append({"claimid": claim_id, "query": claim_text, "variant": "concise", "topk": 20})
 
         # Mechanism-focused variant
-        queries.append({
-            "claimid": claim_id,
-            "query": f"How does {claim_text} work?",
-            "variant": "mechanism-focused",
-            "topk": 20
-        })
+        queries.append(
+            {
+                "claimid": claim_id,
+                "query": f"How does {claim_text} work?",
+                "variant": "mechanism-focused",
+                "topk": 20,
+            }
+        )
 
         # Skeptic-focused variant
-        queries.append({
-            "claimid": claim_id,
-            "query": f"What is the evidence against the claim that {claim_text}?",
-            "variant": "skeptic-focused",
-            "topk": 20
-        })
+        queries.append(
+            {
+                "claimid": claim_id,
+                "query": f"What is the evidence against the claim that {claim_text}?",
+                "variant": "skeptic-focused",
+                "topk": 20,
+            }
+        )
 
     return queries
 
 
-def save_expanded(run_id: str, expanded: list[str], provenance_id: str, provenance_bundle: list) -> Path:
+def save_expanded(
+    run_id: str, expanded: List[str], provenance_id: str, provenance_bundle: List
+) -> Path:
     """Saves the expanded keywords to a file."""
     output_dir = Path("data/keywords")
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -100,7 +104,7 @@ def save_expanded(run_id: str, expanded: list[str], provenance_id: str, provenan
         "run_id": run_id,
         "provenance_id": provenance_id,
         "keywords": expanded,
-        "generated_at": datetime.datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "git_commit": git_commit,
         "input_files": input_files,
     }
@@ -108,5 +112,5 @@ def save_expanded(run_id: str, expanded: list[str], provenance_id: str, provenan
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    provenance.emitevent("expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
+    emitevent("expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle)
     return output_path

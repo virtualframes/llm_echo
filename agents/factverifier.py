@@ -1,5 +1,6 @@
 from typing import Dict, Any, List
 
+
 def verifyclaim(claimid: str, claimtext: str, evidencelist: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Verifies a claim.

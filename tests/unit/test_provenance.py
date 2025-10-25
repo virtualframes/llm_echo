@@ -3,7 +3,7 @@
 import pytest
 import json
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jules.core.provenance import ProvenanceLogger
 from jules.core.config import ProvenanceConfig
 
@@ -39,7 +39,7 @@ class TestProvenanceLogger:
             "hallucination_flags": ["flag1", "flag2"],
             "echo_score": 0.6,
             "echo_chains": [{"id": "other1"}, {"id": "other2"}],
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     def test_log_creates_file(self, logger, sample_flagged_post):
@@ -74,7 +74,7 @@ class TestProvenanceLogger:
     def test_cleanup_old_logs(self, logger, temp_log_dir):
         """Test cleanup of old logs"""
         # Create an old log file
-        old_date = (datetime.utcnow() - timedelta(days=100)).strftime("%Y%m%d")
+        old_date = (datetime.now(timezone.utc) - timedelta(days=100)).strftime("%Y%m%d")
         old_file = temp_log_dir / f"audit_{old_date}.jsonl"
         old_file.write_text('{"test": "data"}\n')
 

@@ -2,7 +2,7 @@
 
 import os
 from typing import Dict, Any, List
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 import logging
 
@@ -46,7 +46,7 @@ class AuditPRGenerator:
             Path to generated file
         """
         post = flagged_post["post"]
-        timestamp = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         filename = f"audit_template_{timestamp}_{index}.md"
         filepath = self.output_dir / filename
 

@@ -1,5 +1,6 @@
 from typing import Dict, Any, List
 
+
 def canonicalize(claimtext: str) -> Dict[str, Any]:
     """
     Canonicalizes a claim.
