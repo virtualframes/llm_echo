@@ -61,9 +61,7 @@ def test_save_expanded(tmp_path):
     provenance_bundle = []
 
     with patch("keywords.expander.emitevent", new=mock_emitevent):
-        output_path = save_expanded(
-            run_id, expanded_keywords, provenance_id, provenance_bundle
-        )
+        output_path = save_expanded(run_id, expanded_keywords, provenance_id, provenance_bundle)
 
     assert output_path.exists()
     assert len(provenance_bundle) == 1
