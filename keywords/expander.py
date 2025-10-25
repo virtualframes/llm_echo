@@ -6,9 +6,8 @@ from pathlib import Path
 from collections import Counter
 from typing import List, Dict
 from sklearn.feature_extraction.text import TfidfVectorizer
-from agents import provenance
-import datetime
-from datetime import timezone
+from agents.provenance import emitevent
+from datetime import datetime, timezone
 
 
 def extract_candidates(corpus_paths: list[str], min_freq: int = 3) -> list[dict]:
@@ -105,7 +104,7 @@ def save_expanded(
         "run_id": run_id,
         "provenance_id": provenance_id,
         "keywords": expanded,
-        "generated_at": datetime.datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "generated_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "git_commit": git_commit,
         "input_files": input_files,
     }
@@ -113,7 +112,7 @@ def save_expanded(
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
-    provenance.emitevent(
+    emitevent(
         "expander", "expanded_keywords_saved", {"path": str(output_path)}, provenance_bundle
     )
     return output_path

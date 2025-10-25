@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from keywords.expander import (
     extract_candidates,
     tfidf_candidates,
@@ -42,12 +43,25 @@ def test_generate_deepseek_queries():
 
 def test_save_expanded(tmp_path):
     """Tests the save_expanded function."""
+
+    def mock_emitevent(module, eventtype, payload, commitsha=None, inputhash=None):
+        provenance_bundle.append(
+            {
+                "module": module,
+                "eventtype": eventtype,
+                "payload": payload,
+                "commitsha": commitsha,
+                "inputhash": inputhash,
+            }
+        )
+
     run_id = "test_run"
     expanded_keywords = ["quantum", "consciousness", "spacetime"]
     provenance_id = "prov-123"
     provenance_bundle = []
 
-    output_path = save_expanded(run_id, expanded_keywords, provenance_id, provenance_bundle)
+    with patch("keywords.expander.emitevent", new=mock_emitevent):
+        output_path = save_expanded(run_id, expanded_keywords, provenance_id, provenance_bundle)
 
     assert output_path.exists()
     assert len(provenance_bundle) == 1

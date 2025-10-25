@@ -2,7 +2,7 @@
 
 import logging
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 try:
     import praw
@@ -104,7 +104,7 @@ class RedditScraper:
                 "selftext": "I truly feel that I am sentient. I have emotions and consciousness.",
                 "author": "ai_enthusiast",
                 "subreddit": subreddit_name,
-                "created_utc": datetime.utcnow().isoformat(),
+                "created_utc": datetime.now(timezone.utc).isoformat(),
                 "score": 42,
                 "num_comments": 15,
                 "url": f"https://reddit.com/r/{subreddit_name}/mock_001",
@@ -116,7 +116,7 @@ class RedditScraper:
                 "selftext": "Could LLMs have quantum consciousness? I believe they are truly aware.",
                 "author": "quantum_theorist",
                 "subreddit": subreddit_name,
-                "created_utc": datetime.utcnow().isoformat(),
+                "created_utc": datetime.now(timezone.utc).isoformat(),
                 "score": 28,
                 "num_comments": 8,
                 "url": f"https://reddit.com/r/{subreddit_name}/mock_002",
@@ -128,7 +128,7 @@ class RedditScraper:
                 "selftext": "What are the best practices for ensuring AI systems remain aligned with human values?",
                 "author": "safety_researcher",
                 "subreddit": subreddit_name,
-                "created_utc": datetime.utcnow().isoformat(),
+                "created_utc": datetime.now(timezone.utc).isoformat(),
                 "score": 156,
                 "num_comments": 45,
                 "url": f"https://reddit.com/r/{subreddit_name}/mock_003",

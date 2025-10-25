@@ -2,7 +2,7 @@
 
 import json
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List
 from pathlib import Path
 import logging
@@ -28,7 +28,7 @@ class ProvenanceLogger:
         Returns:
             Path to log file
         """
-        timestamp = datetime.utcnow()
+        timestamp = datetime.now(timezone.utc)
         date_str = timestamp.strftime("%Y%m%d")
         log_filename = f"audit_{date_str}.jsonl"
         log_path = self.log_dir / log_filename
@@ -123,14 +123,16 @@ class ProvenanceLogger:
             Number of files deleted
         """
         retention_days = days or self.config.retention_days
-        cutoff_date = datetime.utcnow() - timedelta(days=retention_days)
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=retention_days)
         deleted_count = 0
 
         for log_file in self.log_dir.glob("audit_*.jsonl"):
             # Extract date from filename
             try:
                 date_str = log_file.stem.split("_")[1]
-                file_date = datetime.strptime(date_str, "%Y%m%d")
+                file_date = datetime.strptime(date_str, "%Y%m%d").replace(
+                    tzinfo=timezone.utc
+                )
 
                 if file_date < cutoff_date:
                     log_file.unlink()

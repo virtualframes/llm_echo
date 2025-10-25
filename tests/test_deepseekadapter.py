@@ -64,8 +64,5 @@ def test_normalize_response():
     assert "provenancebundle" in normalized_response
     assert "evidence" in normalized_response
     assert len(normalized_response["evidence"]) == 2
-    assert (
-        normalized_response["evidence"][0]["snippet"]
-        == "This is the first mock snippet."
-    )
+    assert normalized_response["evidence"][0]["snippet"] == "This is the first mock snippet."
     assert normalized_response["evidence"][1]["score"] == 0.8

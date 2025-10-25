@@ -1,0 +1,13 @@
+{
+  "commitsha": "",
+  "eventtype": "ingestion_complete",
+  "inputhash": "",
+  "module": "ingestion",
+  "outputhash": "71b1695a5e093334f17bb9e2c55ccc7db142372424904df15c7f26812e10a804",
+  "payload": {
+    "source": "reddit",
+    "status": "success"
+  },
+  "provenancetoken": "3dca3c1c-e9ca-404f-a031-19b7a0aae7c3",
+  "timestampiso": "2025-10-25T06:30:09.627254+00:00"
+}
